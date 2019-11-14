@@ -1,0 +1,30 @@
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'maven'
+apply plugin: 'groovy'
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+}
+
+
+
+group = 'com.wangjiang'
+version = '1.0'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: mavenLocal().url)
+        }
+    }
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = 'com.wangjiang.check-file'
+            implementationClass = 'com.check.file.CheckFilePlugin'
+        }
+    }
+}
