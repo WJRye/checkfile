@@ -1,6 +1,6 @@
 package com.check.file;
 
-public class CheckFileConstants {
+public final class CheckFileConstants {
 
-    public static final String LOG = "CheckFilePlugin-->";
+    public static final String LOG = "CheckFilePlugin:";
 }

@@ -13,6 +13,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 public final class FileUtil {
+
     private FileUtil() {
     }
 
@@ -35,13 +36,12 @@ public final class FileUtil {
             while (!listFiles.isEmpty()) {
                 File nextFile = listFiles.removeFirst();
                 if (nextFile.isDirectory()) {
-                    if (nextFile.getName().startsWith(targetFileName)) {
-                        targetFile.add(nextFile);
-                        continue;
-                    }
-
                     File[] childFiles = nextFile.listFiles();
                     if (childFiles != null) {
+                        if (nextFile.getName().startsWith(targetFileName) && childFiles.length > 0) {
+                            targetFile.add(nextFile);
+                            continue;
+                        }
                         for (File childFile : childFiles) {
                             if (childFile.isDirectory()) {
                                 listFiles.add(childFile);
