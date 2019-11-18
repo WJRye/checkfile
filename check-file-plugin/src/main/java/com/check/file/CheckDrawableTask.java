@@ -47,14 +47,15 @@ public class CheckDrawableTask extends DefaultTask {
     /**
      * 打印消息
      */
-    private static final String FILE_MSG = "path=%s(size=%.2f K)";
+    private static final String FILE_MSG = "w: %s(size=%.2f K)";
 
 
     @TaskAction
     public void checkDrawable() {
         CheckFileExtension checkFileExtension = (CheckFileExtension) getProject().getExtensions().getByName(CheckFileExtension.NAME);
-        LOGGER.warn(TAG + "maxSize=" + checkFileExtension.maxSize + ";enable=" + checkFileExtension.enable);
-        if (!checkFileExtension.enable || checkFileExtension.maxSize <= 0) return;
+        long drawableMaxSize = checkFileExtension.drawablMaxSize > 0 ? checkFileExtension.drawablMaxSize : checkFileExtension.maxSize;
+        LOGGER.warn(TAG + "maxSize=" + drawableMaxSize + ";enable=" + checkFileExtension.enable);
+        if (!checkFileExtension.enable || drawableMaxSize <= 0) return;
 
         Project project = getProject();
         String group = (String) project.getGroup();
@@ -69,7 +70,7 @@ public class CheckDrawableTask extends DefaultTask {
             Configuration configuration = configurationIterator.next();
             Iterator<Dependency> dependencyIterator = configuration.getDependencies().iterator();
             while (dependencyIterator.hasNext()) {
-                //获得项目依赖的Project
+                //获得主Module依赖的其它Module
                 Dependency dependency = dependencyIterator.next();
                 if (group.equals(dependency.getGroup())) {
                     projectNames.add(dependency.getName());
@@ -78,9 +79,9 @@ public class CheckDrawableTask extends DefaultTask {
         }
 
         File rootFile = project.getRootDir();
-        long maxSize = checkFileExtension.maxSize * SIZE_UNIT;
+        long maxSize = drawableMaxSize * SIZE_UNIT;
         for (String proName : projectNames) {
-            scanFile(rootFile, proName, maxSize, checkFileExtension.maxSize);
+            scanFile(rootFile, proName, maxSize, drawableMaxSize);
         }
 
     }
