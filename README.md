@@ -36,7 +36,7 @@ checkFile {
 运行结果示例如下：
 
 ```
-> Task :Kuaikan:check-drawable 
+> Task :主Module名字:check-drawable 
 CheckFilePlugin:CheckDrawable: maxSize=30;enable=true
 CheckFilePlugin:CheckDrawable: 主Module名字
 Files larger than the maximum size(30 K) are as follows:
