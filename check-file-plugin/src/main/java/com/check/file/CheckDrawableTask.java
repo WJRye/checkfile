@@ -53,7 +53,7 @@ public class CheckDrawableTask extends DefaultTask {
     @TaskAction
     public void checkDrawable() {
         CheckFileExtension checkFileExtension = (CheckFileExtension) getProject().getExtensions().getByName(CheckFileExtension.NAME);
-        long drawableMaxSize = checkFileExtension.drawablMaxSize > 0 ? checkFileExtension.drawablMaxSize : checkFileExtension.maxSize;
+        long drawableMaxSize = checkFileExtension.drawabeMaxSize > 0 ? checkFileExtension.drawabeMaxSize : checkFileExtension.maxSize;
         LOGGER.warn(TAG + "maxSize=" + drawableMaxSize + ";enable=" + checkFileExtension.enable);
         if (!checkFileExtension.enable || drawableMaxSize <= 0) return;
 
