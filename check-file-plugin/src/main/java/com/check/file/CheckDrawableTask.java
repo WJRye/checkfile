@@ -23,7 +23,7 @@ public class CheckDrawableTask extends DefaultTask {
     /**
      * 换算成K
      */
-    private static final long SIZE_UNIT = 1024;
+    private static final long SIZE_UNIT = 1000;
     /**
      * 要扫面的目标文件名字
      */
@@ -43,11 +43,11 @@ public class CheckDrawableTask extends DefaultTask {
     /**
      * 打印消息
      */
-    private static final String FOLLOW_MSG = "Files larger than the maximum size(%d K) are as follows:";
+    private static final String FOLLOW_MSG = "Files larger than the maximum size(%d KB) are as follows:";
     /**
      * 打印消息
      */
-    private static final String FILE_MSG = "w: %s(size=%.2f K)";
+    private static final String FILE_MSG = "w: %s(size=%.2f KB)";
 
 
     @TaskAction
@@ -110,7 +110,7 @@ public class CheckDrawableTask extends DefaultTask {
             LOGGER.warn(TAG + projectName);
             LOGGER.warn(String.format(Locale.getDefault(), FOLLOW_MSG, size));
             for (File targetFile : targetFiles) {
-                LOGGER.warn(String.format(Locale.getDefault(), FILE_MSG, targetFile.getPath(), (double) targetFile.length() / SIZE_UNIT));
+                LOGGER.warn(String.format(Locale.getDefault(), FILE_MSG, targetFile.getPath(), (float) targetFile.length() / SIZE_UNIT));
             }
         }
     }
