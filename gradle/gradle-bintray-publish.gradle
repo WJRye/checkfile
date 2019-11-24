@@ -1,0 +1,88 @@
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            groupId GROUP_ID
+            artifactId ARTIFACT_ID
+            version VERSION
+        }
+    }
+}
+
+group = GROUP_ID
+version = VERSION
+
+bintray {
+    user = BINTRAY_USER
+    key = BINTRAY_API_KEY
+    configurations = ['archives']
+    publications = ['MyPublication']
+    pkg {
+        repo = 'maven'
+        name = ARTIFACT_ID
+        userOrg = USER_ORG
+        licenses = ['Apache-2.0']
+        vcsUrl = VCS_URL
+        labels = ['Android','Plugin']
+        publicDownloadNumbers = true
+        publish = true
+        version {
+            name = VERSION
+            desc = DESCRIPTION
+            vcsTag = VERSION
+            attributes = ['gradle-plugin': 'com.wangjiang:check-file-plugin']
+        }
+    }
+}
+
+
+if (project.getPlugins().hasPlugin('com.android.application') ||
+        project.getPlugins().hasPlugin('com.android.library')) {
+    task androidJavadocs(type: Javadoc) {
+        source = android.sourceSets.main.java.source
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    }
+
+    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+        classifier = 'javadoc'
+        from androidJavadocs.destinationDir
+    }
+
+    task androidSourcesJar(type: Jar) {
+        classifier = 'sources'
+        from android.sourceSets.main.java.source
+    }
+} else {
+    task sourcesJar(type: Jar, dependsOn:classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn:javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+}
+
+artifacts {
+    if (project.getPlugins().hasPlugin('com.android.application') ||
+            project.getPlugins().hasPlugin('com.android.library')) {
+        archives androidSourcesJar
+        archives androidJavadocsJar
+    } else {
+        archives sourcesJar
+        archives javadocJar
+    }
+}
+
