@@ -10,7 +10,11 @@ public class CheckFileExtension {
     /**
      * Drawable 文件最大大小
      */
-    public int drawabeMaxSize;
+    public int drawableMaxSize;
+    /**
+     * 第三方 包文件最大大小
+     */
+    public int thirdPackageMaxSize;
     /**
      * 是否打开
      */

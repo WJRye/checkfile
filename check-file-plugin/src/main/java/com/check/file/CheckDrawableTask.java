@@ -8,6 +8,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.tasks.TaskAction;
 import org.slf4j.Logger;
 
@@ -53,7 +54,7 @@ public class CheckDrawableTask extends DefaultTask {
     @TaskAction
     public void checkDrawable() {
         CheckFileExtension checkFileExtension = (CheckFileExtension) getProject().getExtensions().getByName(CheckFileExtension.NAME);
-        long drawableMaxSize = checkFileExtension.drawabeMaxSize > 0 ? checkFileExtension.drawabeMaxSize : checkFileExtension.maxSize;
+        long drawableMaxSize = checkFileExtension.drawableMaxSize > 0 ? checkFileExtension.drawableMaxSize : checkFileExtension.maxSize;
         LOGGER.warn(TAG + "maxSize=" + drawableMaxSize + ";enable=" + checkFileExtension.enable);
         if (!checkFileExtension.enable || drawableMaxSize <= 0) return;
 
@@ -72,7 +73,7 @@ public class CheckDrawableTask extends DefaultTask {
             while (dependencyIterator.hasNext()) {
                 //获得主Module依赖的其它Module
                 Dependency dependency = dependencyIterator.next();
-                if (group.equals(dependency.getGroup())) {
+                if (dependency instanceof ModuleDependency && group.equals(dependency.getGroup())) {
                     projectNames.add(dependency.getName());
                 }
             }
