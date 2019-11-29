@@ -2,7 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.wangjiang.check-file'
 
 checkFile {
-    maxSize = 30
+    drawableMaxSize = 30
+    thirdPackageMaxSize = 50
 }
 
 android {

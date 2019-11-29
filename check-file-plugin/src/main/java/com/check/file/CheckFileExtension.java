@@ -2,7 +2,7 @@ package com.check.file;
 
 public class CheckFileExtension {
 
-    static final String NAME = "checkFile";
+    public static final String NAME = "checkFile";
     /**
      * 文件最大大小
      */
