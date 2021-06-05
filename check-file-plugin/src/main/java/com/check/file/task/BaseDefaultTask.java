@@ -43,6 +43,7 @@ public abstract class BaseDefaultTask extends DefaultTask {
 
 
     void checkFile(Collection<File> targetFiles, String projectName, long size) {
+        LOGGER.warn("\n");
         if (!targetFiles.isEmpty()) {
             boolean hasLargerFile = false;
             float targetFileSize = 0f;
