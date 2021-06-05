@@ -85,7 +85,7 @@ public class CheckThirdPackageTask extends BaseDefaultTask {
                     }
                 }
             }
-            checkFile(files, project.getName(), 1);
+            checkFile(files, project.getName(), thirdPackageMaxSize);
         }
     }
 
