@@ -43,8 +43,8 @@ public abstract class BaseDefaultTask extends DefaultTask {
 
 
     void checkFile(Collection<File> targetFiles, String projectName, long size) {
-        LOGGER.warn("\n");
-        if (!targetFiles.isEmpty()) {
+        if (targetFiles != null && !targetFiles.isEmpty()) {
+            LOGGER.warn("\n");
             boolean hasLargerFile = false;
             float targetFileSize = 0f;
             for (File targetFile : targetFiles) {
@@ -57,6 +57,17 @@ public abstract class BaseDefaultTask extends DefaultTask {
                     }
                     LOGGER.warn(String.format(Locale.getDefault(), FILE_MSG, targetFile.getPath(), targetFileSize));
                 }
+            }
+        }
+    }
+
+    void printFile(Collection<File> targetFiles) {
+        if (targetFiles != null && !targetFiles.isEmpty()) {
+            LOGGER.warn("\n");
+            float targetFileSize = 0f;
+            for (File targetFile : targetFiles) {
+                targetFileSize = (float) targetFile.length() / SIZE_UNIT;
+                LOGGER.warn(String.format(Locale.getDefault(), FILE_MSG, targetFile.getPath(), targetFileSize));
             }
         }
     }

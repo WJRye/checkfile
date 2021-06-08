@@ -11,9 +11,11 @@ import org.gradle.api.artifacts.ProjectDependency;
 import org.gradle.api.artifacts.ResolvableDependencies;
 
 import java.io.File;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class CheckThirdPackageTask extends BaseDefaultTask {
@@ -44,20 +46,30 @@ public class CheckThirdPackageTask extends BaseDefaultTask {
         String thirdPackageLocalPath = getThirdPackageLocalPath();
         LinkedList<Project> projects = new LinkedList<>();
         projects.add(getProject());
-        Set<String> allProjectNames = new HashSet<>();
+        Set<String> allProjectNames = new LinkedHashSet<>();
+        List<ThirdPackageInfo> thirdPackageInfoList = new ArrayList<>();
         while (!projects.isEmpty()) {
+            ThirdPackageInfo thirdPackageInfo = new ThirdPackageInfo();
             Project project = projects.removeFirst();
-            Set<File> files = new HashSet<>();
+            ThirdPackageInfo.ProjectInfo projectInfo = new ThirdPackageInfo.ProjectInfo();
+            projectInfo.setName(project.getName());
+            projectInfo.setPath(project.getPath());
+            projectInfo.setDir(project.getProjectDir().getPath());
+            projectInfo.setRootDir(project.getRootDir().getPath());
+            thirdPackageInfo.setProjectInfo(projectInfo);
             ConfigurationContainer configurations = project.getConfigurations();
             Iterator<Configuration> configurationIterator = configurations.iterator();
             while (configurationIterator.hasNext()) {
+                ThirdPackageInfo.ConfigurationInfo configurationInfo = new ThirdPackageInfo.ConfigurationInfo();
                 Configuration configuration = configurationIterator.next();
                 if (configuration.isCanBeResolved()) {
+                    configurationInfo.setName(configuration.getName());
                     ResolvableDependencies resolvableDependencies = configuration.getIncoming();
                     if (!isAvailableConfiguration(configuration.getName()))
                         continue;
                     Iterator<Dependency> dependencyIterator = resolvableDependencies.getDependencies().iterator();
                     while (dependencyIterator.hasNext()) {
+                        ThirdPackageInfo.DependencyInfo dependencyInfo = new ThirdPackageInfo.DependencyInfo();
                         Dependency dependency = dependencyIterator.next();
                         if (dependency instanceof ProjectDependency) {
                             Project dependencyProject = ((ProjectDependency) dependency).getDependencyProject();
@@ -67,11 +79,25 @@ public class CheckThirdPackageTask extends BaseDefaultTask {
                             }
                             continue;
                         } else if (dependency instanceof FileCollectionDependency) {
-                            files.addAll(((FileCollectionDependency) dependency).getFiles().getFiles());
+                            dependencyInfo.setFiles(((FileCollectionDependency) dependency).getFiles().getFiles());
+                            Set<File> files = dependencyInfo.getFiles();
+                            if (files != null) {
+                                StringBuilder sb = new StringBuilder();
+                                for (File file : files) {
+                                    String path = file.getPath();
+                                    sb.append(path.substring(project.getRootDir().getPath().length())).append(";");
+                                    dependencyInfo.setName(sb.toString());
+                                }
+                            }
+                            configurationInfo.addDependencyInfo(dependencyInfo);
                             continue;
                         }
+                        dependencyInfo.setGroup(dependency.getGroup());
+                        dependencyInfo.setName(dependency.getName());
+                        dependencyInfo.setVersion(dependency.getVersion());
                         String group = dependency.getGroup();
                         if (!isWhiteGroupList(group)) {
+                            Set<File> files = new LinkedHashSet<>();
                             Iterator<File> fileIterator = configuration.files(dependency).iterator();
                             while (fileIterator.hasNext()) {
                                 File file = fileIterator.next();
@@ -81,11 +107,36 @@ public class CheckThirdPackageTask extends BaseDefaultTask {
                                     files.add(file);
                                 }
                             }
+                            dependencyInfo.setFiles(files);
                         }
+                        configurationInfo.addDependencyInfo(dependencyInfo);
                     }
+                    thirdPackageInfo.addConfigurationInfo(configurationInfo);
                 }
             }
-            checkFile(files, project.getName(), thirdPackageMaxSize);
+            thirdPackageInfoList.add(thirdPackageInfo);
+        }
+
+        Iterator<ThirdPackageInfo> thirdPackageInfoIterator = thirdPackageInfoList.iterator();
+        while (thirdPackageInfoIterator.hasNext()) {
+            ThirdPackageInfo thirdPackageInfo = thirdPackageInfoIterator.next();
+            List<ThirdPackageInfo.ConfigurationInfo> configurationInfoList = thirdPackageInfo.getConfigurationInfoList();
+            if (configurationInfoList == null) {
+                continue;
+            }
+            Iterator<ThirdPackageInfo.ConfigurationInfo> configurationInfoIterator = configurationInfoList.iterator();
+            while (configurationInfoIterator.hasNext()) {
+                ThirdPackageInfo.ConfigurationInfo configurationInfo = configurationInfoIterator.next();
+                List<ThirdPackageInfo.DependencyInfo> dependencyInfoList = configurationInfo.getDependencyInfoList();
+                if (dependencyInfoList == null) {
+                    continue;
+                }
+                Iterator<ThirdPackageInfo.DependencyInfo> dependencyInfoIterator = dependencyInfoList.iterator();
+                while (dependencyInfoIterator.hasNext()) {
+                    ThirdPackageInfo.DependencyInfo dependencyInfo = dependencyInfoIterator.next();
+                    checkFile(dependencyInfo.getFiles(), thirdPackageInfo.getProjectInfo().getPath(), thirdPackageMaxSize);
+                }
+            }
         }
     }
 
@@ -98,7 +149,7 @@ public class CheckThirdPackageTask extends BaseDefaultTask {
      * @return 是否是想要的configuration，返回true表示是，否则不是
      */
     private static boolean isAvailableConfiguration(String name) {
-        return "releaseCompileClasspath".equals(name) || "releaseRuntimeClasspath".equals(name);
+        return "releaseCompileClasspath".equals(name);
     }
 
     /**
@@ -109,7 +160,7 @@ public class CheckThirdPackageTask extends BaseDefaultTask {
      */
     private static boolean isWhiteGroupList(String content) {
         if (content == null) return false;
-        String[] whiteList = {"androidx", "org.jetbrains.kotlin", "com.android.support", "com.google.android", "com.google", "org.jetbrains", "com.android"};
+        String[] whiteList = {"androidx", "android.arch", "org.jetbrains.kotlin", "com.android.support", "com.google.android", "com.google", "org.jetbrains", "com.android"};
         for (String s : whiteList) {
             if (content.startsWith(s)) {
                 return true;
